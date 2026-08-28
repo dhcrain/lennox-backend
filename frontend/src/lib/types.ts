@@ -25,6 +25,7 @@ export interface UnitState {
   fan_running: boolean | null;
   ventilating: boolean | null;
   ventilation_ends_at: string | null;
+  schedule_hold: boolean | null;
   heat_setpoint: number | null;
   cool_setpoint: number | null;
   single_setpoint: number | null;

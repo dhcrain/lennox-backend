@@ -1,4 +1,4 @@
-import { ArrowLeftRight, Fan, Flame, Snowflake } from "lucide-react";
+import { ArrowLeftRight, Fan, Flame, PauseCircle, Snowflake } from "lucide-react";
 import type { UnitState } from "../lib/types";
 import { formatDuration, useRemainingSeconds } from "../lib/useCountdown";
 
@@ -42,6 +42,12 @@ export function UnitStatusBadges({ live }: { live: UnitState }) {
           <ArrowLeftRight size={12} strokeWidth={2} />
           ERV running
           {ventilationRemaining !== null && ` · ${formatDuration(ventilationRemaining)} left`}
+        </span>
+      )}
+      {live.schedule_hold && (
+        <span className="flex items-center gap-1 rounded-full bg-amber-900/60 px-2 py-0.5 text-amber-300">
+          <PauseCircle size={12} strokeWidth={2} />
+          On hold
         </span>
       )}
     </div>

@@ -32,6 +32,7 @@ class UnitState(BaseModel):
     fan_running: bool | None = None
     ventilating: bool | None = None
     ventilation_ends_at: datetime | None = None
+    schedule_hold: bool | None = None
     heat_setpoint: float | None = None
     cool_setpoint: float | None = None
     single_setpoint: float | None = None

@@ -1,4 +1,4 @@
-import { Fan, Flame, Snowflake } from "lucide-react";
+import { CalendarClock, Fan, Flame, PauseCircle, Snowflake } from "lucide-react";
 import { useState } from "react";
 import { ApiError, apiPost } from "../lib/api";
 import type { UnitState } from "../lib/types";
@@ -124,6 +124,34 @@ export function ControlPanel({
             run({ fan_mode }, () => apiPost<UnitState>(`/units/${unit.id}/fan`, { fan_mode }))
           }
         />
+      </div>
+
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Schedule</p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            disabled={pending || offline || unit.schedule_hold === true}
+            onClick={() =>
+              run({ schedule_hold: true }, () => apiPost<UnitState>(`/units/${unit.id}/schedule/hold`, {}))
+            }
+            className="flex h-12 flex-1 items-center justify-center gap-1.5 rounded-lg bg-slate-800 text-sm font-medium text-slate-300 active:bg-slate-700 disabled:opacity-40"
+          >
+            <PauseCircle size={16} strokeWidth={2} />
+            Hold
+          </button>
+          <button
+            type="button"
+            disabled={pending || offline || !unit.schedule_hold}
+            onClick={() =>
+              run({ schedule_hold: false }, () => apiPost<UnitState>(`/units/${unit.id}/schedule/resume`, {}))
+            }
+            className="flex h-12 flex-1 items-center justify-center gap-1.5 rounded-lg bg-slate-800 text-sm font-medium text-slate-300 active:bg-slate-700 disabled:opacity-40"
+          >
+            <CalendarClock size={16} strokeWidth={2} />
+            Resume Schedule
+          </button>
+        </div>
       </div>
     </div>
   );

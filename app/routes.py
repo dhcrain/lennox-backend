@@ -111,6 +111,28 @@ async def set_setpoints(unit_id: str, body: SetpointsRequest, request: Request):
     return conn.snapshot()
 
 
+@router.post("/units/{unit_id}/schedule/hold", response_model=UnitState, status_code=202)
+async def hold_schedule(unit_id: str, request: Request):
+    conn = _get_unit_or_404(_manager(request), unit_id)
+    zone = _get_zone_or_503(conn)
+    try:
+        await zone.setScheduleHold(True)
+    except S30Exception as e:
+        _raise_s30_as_400(e)
+    return conn.snapshot()
+
+
+@router.post("/units/{unit_id}/schedule/resume", response_model=UnitState, status_code=202)
+async def resume_schedule(unit_id: str, request: Request):
+    conn = _get_unit_or_404(_manager(request), unit_id)
+    zone = _get_zone_or_503(conn)
+    try:
+        await zone.setScheduleHold(False)
+    except S30Exception as e:
+        _raise_s30_as_400(e)
+    return conn.snapshot()
+
+
 @router.post("/units/{unit_id}/ventilation", response_model=UnitState, status_code=202)
 async def run_ventilation(unit_id: str, body: VentilationRequest, request: Request):
     conn = _get_unit_or_404(_manager(request), unit_id)

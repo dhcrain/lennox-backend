@@ -67,6 +67,7 @@ class UnitConnection:
             fan_running=zone.fan,
             ventilating=zone.ventilation,
             ventilation_ends_at=ventilation_ends_at,
+            schedule_hold=zone.overrideActive,
             heat_setpoint=None if single else zone.getHeatSP(),
             cool_setpoint=None if single else zone.getCoolSP(),
             single_setpoint=zone.sp if single else None,
