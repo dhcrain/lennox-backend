@@ -1,3 +1,4 @@
+import { Fan, Flame, Snowflake } from "lucide-react";
 import { useState } from "react";
 import { ApiError, apiPost } from "../lib/api";
 import type { UnitState } from "../lib/types";
@@ -38,6 +39,7 @@ export function ControlPanel({
     }
   }
 
+  const isOff = unit.mode === "off";
   const isSingleSetpoint = unit.single_setpoint !== null;
   const limits = unit.setpoint_limits;
   const showHeat = unit.mode !== "cool";
@@ -45,56 +47,61 @@ export function ControlPanel({
 
   return (
     <div className="space-y-4 border-t border-slate-800 p-4">
-      <div>
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Setpoints</p>
-        <div className="space-y-2">
-          {isSingleSetpoint ? (
-            <SetpointStepper
-              label="Target"
-              value={unit.single_setpoint}
-              min={limits?.min_cool ?? limits?.min_heat ?? null}
-              max={limits?.max_cool ?? limits?.max_heat ?? null}
-              disabled={pending || offline}
-              onChange={(setpoint) =>
-                run({ single_setpoint: setpoint }, () =>
-                  apiPost<UnitState>(`/units/${unit.id}/setpoints`, { setpoint }),
-                )
-              }
-            />
-          ) : (
-            <>
-              {showHeat && (
-                <SetpointStepper
-                  label="Heat"
-                  value={unit.heat_setpoint}
-                  min={limits?.min_heat ?? null}
-                  max={limits?.max_heat ?? null}
-                  disabled={pending || offline}
-                  onChange={(heat_setpoint) =>
-                    run({ heat_setpoint }, () =>
-                      apiPost<UnitState>(`/units/${unit.id}/setpoints`, { heat_setpoint }),
-                    )
-                  }
-                />
-              )}
-              {showCool && (
-                <SetpointStepper
-                  label="Cool"
-                  value={unit.cool_setpoint}
-                  min={limits?.min_cool ?? null}
-                  max={limits?.max_cool ?? null}
-                  disabled={pending || offline}
-                  onChange={(cool_setpoint) =>
-                    run({ cool_setpoint }, () =>
-                      apiPost<UnitState>(`/units/${unit.id}/setpoints`, { cool_setpoint }),
-                    )
-                  }
-                />
-              )}
-            </>
-          )}
+      {!isOff && (
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Setpoints</p>
+          <div className="space-y-2">
+            {isSingleSetpoint ? (
+              <SetpointStepper
+                label="Target"
+                icon={unit.mode === "heat" ? Flame : unit.mode === "cool" ? Snowflake : undefined}
+                value={unit.single_setpoint}
+                min={limits?.min_cool ?? limits?.min_heat ?? null}
+                max={limits?.max_cool ?? limits?.max_heat ?? null}
+                disabled={pending || offline}
+                onChange={(setpoint) =>
+                  run({ single_setpoint: setpoint }, () =>
+                    apiPost<UnitState>(`/units/${unit.id}/setpoints`, { setpoint }),
+                  )
+                }
+              />
+            ) : (
+              <>
+                {showHeat && (
+                  <SetpointStepper
+                    label="Heat"
+                    icon={Flame}
+                    value={unit.heat_setpoint}
+                    min={limits?.min_heat ?? null}
+                    max={limits?.max_heat ?? null}
+                    disabled={pending || offline}
+                    onChange={(heat_setpoint) =>
+                      run({ heat_setpoint }, () =>
+                        apiPost<UnitState>(`/units/${unit.id}/setpoints`, { heat_setpoint }),
+                      )
+                    }
+                  />
+                )}
+                {showCool && (
+                  <SetpointStepper
+                    label="Cool"
+                    icon={Snowflake}
+                    value={unit.cool_setpoint}
+                    min={limits?.min_cool ?? null}
+                    max={limits?.max_cool ?? null}
+                    disabled={pending || offline}
+                    onChange={(cool_setpoint) =>
+                      run({ cool_setpoint }, () =>
+                        apiPost<UnitState>(`/units/${unit.id}/setpoints`, { cool_setpoint }),
+                      )
+                    }
+                  />
+                )}
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       <div>
         <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Mode</p>
@@ -106,7 +113,10 @@ export function ControlPanel({
       </div>
 
       <div>
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Fan</p>
+        <p className="mb-2 flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <Fan size={12} strokeWidth={2} />
+          Fan
+        </p>
         <FanSelector
           value={unit.fan_mode}
           disabled={pending || offline}

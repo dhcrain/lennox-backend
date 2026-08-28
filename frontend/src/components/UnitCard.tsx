@@ -1,14 +1,10 @@
+import { Droplet } from "lucide-react";
 import { useState } from "react";
 import type { UnitState, UnitSummary, WsStatus } from "../lib/types";
-import { formatDuration, useRemainingSeconds } from "../lib/useCountdown";
 import { ConnectionStatusBadge } from "./ConnectionStatusBadge";
 import { ControlPanel } from "./ControlPanel";
-
-const OPERATING_STATE_STYLES: Record<string, string> = {
-  heating: "bg-orange-900/60 text-orange-300",
-  cooling: "bg-sky-900/60 text-sky-300",
-  off: "bg-slate-800 text-slate-400",
-};
+import { SetpointSummary } from "./SetpointSummary";
+import { UnitStatusBadges } from "./UnitStatusBadges";
 
 export function UnitCard({
   summary,
@@ -24,7 +20,6 @@ export function UnitCard({
   const [expanded, setExpanded] = useState(false);
   const ready = live !== undefined;
   const connected = live?.connected ?? summary.connected;
-  const ventilationRemaining = useRemainingSeconds(live?.ventilating ? live.ventilation_ends_at : null);
 
   return (
     <div className="overflow-hidden rounded-2xl bg-slate-900 shadow-lg shadow-black/20">
@@ -37,6 +32,9 @@ export function UnitCard({
         <div className="min-w-0">
           <p className="truncate text-base font-semibold text-slate-100">{summary.label}</p>
           <ConnectionStatusBadge connected={connected} lastSeen={summary.last_seen} wsStatus={wsStatus} />
+          {ready && connected && (
+            <SetpointSummary mode={live.mode} heatSetpoint={live.heat_setpoint} coolSetpoint={live.cool_setpoint} />
+          )}
         </div>
         {ready && connected ? (
           <div className="flex shrink-0 items-baseline gap-3 text-right">
@@ -44,7 +42,10 @@ export function UnitCard({
               {live.temperature ?? "--"}&deg;
             </span>
             {live.humidity !== null && (
-              <span className="text-sm text-slate-400">{live.humidity}% RH</span>
+              <span className="flex items-center gap-0.5 text-sm text-slate-400">
+                <Droplet size={13} className="text-slate-500" strokeWidth={2} />
+                {live.humidity}%
+              </span>
             )}
           </div>
         ) : (
@@ -52,29 +53,7 @@ export function UnitCard({
         )}
       </button>
 
-      {ready && live.mode && (
-        <div className="flex flex-wrap gap-2 px-4 pb-3 text-xs">
-          <span
-            className={`rounded-full px-2 py-0.5 capitalize ${
-              OPERATING_STATE_STYLES[live.operating_state ?? ""] ?? "bg-slate-800 text-slate-400"
-            }`}
-          >
-            {live.operating_state ?? live.mode}
-          </span>
-          {live.fan_mode && (
-            <span className="rounded-full bg-slate-800 px-2 py-0.5 capitalize text-slate-400">
-              fan: {live.fan_mode}
-              {live.fan_running ? " · running" : ""}
-            </span>
-          )}
-          {live.ventilating && (
-            <span className="rounded-full bg-emerald-900/60 px-2 py-0.5 text-emerald-300">
-              ERV running
-              {ventilationRemaining !== null && ` · ${formatDuration(ventilationRemaining)} left`}
-            </span>
-          )}
-        </div>
-      )}
+      {ready && <UnitStatusBadges live={live} />}
 
       {expanded && ready && <ControlPanel unit={live} onUpdate={onUpdate} />}
     </div>

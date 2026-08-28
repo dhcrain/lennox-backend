@@ -1,5 +1,8 @@
+import type { ComponentType } from "react";
+
 export function SetpointStepper({
   label,
+  icon: Icon,
   value,
   min,
   max,
@@ -7,6 +10,7 @@ export function SetpointStepper({
   onChange,
 }: {
   label: string;
+  icon?: ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
   value: number | null;
   min: number | null;
   max: number | null;
@@ -18,7 +22,10 @@ export function SetpointStepper({
 
   return (
     <div className="flex items-center justify-between gap-3 rounded-lg bg-slate-800 p-2">
-      <span className="pl-2 text-sm font-medium text-slate-300">{label}</span>
+      <span className="flex items-center gap-1.5 pl-2 text-sm font-medium text-slate-300">
+        {Icon && <Icon size={15} strokeWidth={2} className="text-slate-400" />}
+        {label}
+      </span>
       <div className="flex items-center gap-3">
         <button
           type="button"

@@ -1,3 +1,4 @@
+import { ArrowLeftRight } from "lucide-react";
 import { useState } from "react";
 import { apiPost, ApiError } from "../lib/api";
 import { messageFromError, useToast } from "./Toast";
@@ -32,7 +33,10 @@ export function VentilateAllControl({ units }: { units: UnitSummary[] }) {
 
   return (
     <div className="mx-4 mt-2 flex flex-wrap items-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 shadow-lg shadow-black/20">
-      <span className="text-sm font-medium text-slate-300">Run ERV on all units</span>
+      <span className="flex items-center gap-1.5 text-sm font-medium text-slate-300">
+        <ArrowLeftRight size={14} strokeWidth={2} className="text-emerald-400" />
+        Run ERV on all units
+      </span>
       <div className="flex gap-2">
         {DURATION_PRESETS_MINUTES.map((minutes) => (
           <button
