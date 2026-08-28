@@ -1,7 +1,14 @@
 import { useState } from "react";
 import type { UnitState, UnitSummary, WsStatus } from "../lib/types";
+import { formatDuration, useRemainingSeconds } from "../lib/useCountdown";
 import { ConnectionStatusBadge } from "./ConnectionStatusBadge";
 import { ControlPanel } from "./ControlPanel";
+
+const OPERATING_STATE_STYLES: Record<string, string> = {
+  heating: "bg-orange-900/60 text-orange-300",
+  cooling: "bg-sky-900/60 text-sky-300",
+  off: "bg-slate-800 text-slate-400",
+};
 
 export function UnitCard({
   summary,
@@ -17,6 +24,7 @@ export function UnitCard({
   const [expanded, setExpanded] = useState(false);
   const ready = live !== undefined;
   const connected = live?.connected ?? summary.connected;
+  const ventilationRemaining = useRemainingSeconds(live?.ventilating ? live.ventilation_ends_at : null);
 
   return (
     <div className="overflow-hidden rounded-2xl bg-slate-900 shadow-lg shadow-black/20">
@@ -45,10 +53,25 @@ export function UnitCard({
       </button>
 
       {ready && live.mode && (
-        <div className="flex gap-2 px-4 pb-3 text-xs text-slate-400">
-          <span className="rounded-full bg-slate-800 px-2 py-0.5 capitalize">{live.mode}</span>
+        <div className="flex flex-wrap gap-2 px-4 pb-3 text-xs">
+          <span
+            className={`rounded-full px-2 py-0.5 capitalize ${
+              OPERATING_STATE_STYLES[live.operating_state ?? ""] ?? "bg-slate-800 text-slate-400"
+            }`}
+          >
+            {live.operating_state ?? live.mode}
+          </span>
           {live.fan_mode && (
-            <span className="rounded-full bg-slate-800 px-2 py-0.5 capitalize">fan: {live.fan_mode}</span>
+            <span className="rounded-full bg-slate-800 px-2 py-0.5 capitalize text-slate-400">
+              fan: {live.fan_mode}
+              {live.fan_running ? " · running" : ""}
+            </span>
+          )}
+          {live.ventilating && (
+            <span className="rounded-full bg-emerald-900/60 px-2 py-0.5 text-emerald-300">
+              ERV running
+              {ventilationRemaining !== null && ` · ${formatDuration(ventilationRemaining)} left`}
+            </span>
           )}
         </div>
       )}

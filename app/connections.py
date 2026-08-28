@@ -53,6 +53,8 @@ class UnitConnection:
             return UnitState(id=self.id, label=self.label, connected=self.connected)
 
         single = zone.system.single_setpoint_mode
+        until_ts = zone.system.ventilatingUntilTime
+        ventilation_ends_at = datetime.fromtimestamp(int(until_ts), tz=timezone.utc) if until_ts else None
         return UnitState(
             id=self.id,
             label=self.label,
@@ -60,8 +62,11 @@ class UnitConnection:
             temperature=zone.getTemperature(),
             humidity=zone.getHumidity(),
             mode=zone.getSystemMode(),
+            operating_state=zone.tempOperation,
             fan_mode=zone.getFanMode(),
             fan_running=zone.fan,
+            ventilating=zone.ventilation,
+            ventilation_ends_at=ventilation_ends_at,
             heat_setpoint=None if single else zone.getHeatSP(),
             cool_setpoint=None if single else zone.getCoolSP(),
             single_setpoint=zone.sp if single else None,

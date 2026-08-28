@@ -8,7 +8,15 @@ from lennoxs30api.s30exception import EC_BAD_PARAMETERS, S30Exception
 
 from app.auth import verify_token, verify_ws_token
 from app.connections import ConnectionManager, UnitConnection
-from app.models import FanRequest, ModeRequest, SetpointsRequest, UnitState
+from app.models import (
+    FanRequest,
+    ModeRequest,
+    SetpointsRequest,
+    UnitState,
+    VentilationRequest,
+    VentilationRunResponse,
+    VentilationUnitResult,
+)
 
 _LOGGER = logging.getLogger("lennox_backend.routes")
 
@@ -101,6 +109,34 @@ async def set_setpoints(unit_id: str, body: SetpointsRequest, request: Request):
     except S30Exception as e:
         _raise_s30_as_400(e)
     return conn.snapshot()
+
+
+@router.post("/units/{unit_id}/ventilation", response_model=UnitState, status_code=202)
+async def run_ventilation(unit_id: str, body: VentilationRequest, request: Request):
+    conn = _get_unit_or_404(_manager(request), unit_id)
+    zone = _get_zone_or_503(conn)
+    try:
+        await zone.system.ventilation_timed(body.duration_minutes * 60)
+    except S30Exception as e:
+        _raise_s30_as_400(e)
+    return conn.snapshot()
+
+
+@router.post("/ventilation/run", response_model=VentilationRunResponse, status_code=202)
+async def run_ventilation_all(body: VentilationRequest, request: Request):
+    manager = _manager(request)
+    results: list[VentilationUnitResult] = []
+    for conn in manager.units.values():
+        try:
+            zone = _get_zone_or_503(conn)
+            await zone.system.ventilation_timed(body.duration_minutes * 60)
+            results.append(VentilationUnitResult(unit_id=conn.id, ok=True))
+        except HTTPException as e:
+            detail = e.detail if isinstance(e.detail, dict) else {"message": str(e.detail)}
+            results.append(VentilationUnitResult(unit_id=conn.id, ok=False, error=detail["message"]))
+        except S30Exception as e:
+            results.append(VentilationUnitResult(unit_id=conn.id, ok=False, error=e.message))
+    return VentilationRunResponse(results=results)
 
 
 ws_router = APIRouter()

@@ -20,8 +20,11 @@ export interface UnitState {
   temperature: number | null;
   humidity: number | null;
   mode: string | null;
+  operating_state: string | null;
   fan_mode: string | null;
   fan_running: boolean | null;
+  ventilating: boolean | null;
+  ventilation_ends_at: string | null;
   heat_setpoint: number | null;
   cool_setpoint: number | null;
   single_setpoint: number | null;
@@ -29,3 +32,13 @@ export interface UnitState {
 }
 
 export type WsStatus = "connecting" | "open" | "closed";
+
+export interface VentilationUnitResult {
+  unit_id: string;
+  ok: boolean;
+  error: string | null;
+}
+
+export interface VentilationRunResponse {
+  results: VentilationUnitResult[];
+}

@@ -17,12 +17,19 @@ export function ControlPanel({
   const [pending, setPending] = useState(false);
   const offline = !unit.connected;
 
-  async function run(action: () => Promise<UnitState>) {
+  // The E30 command endpoints fire-and-forget: the 202 response body is a snapshot
+  // taken before the physical equipment confirms the change, so applying it would
+  // flash the old value back on screen. Apply the change optimistically instead and
+  // let this unit's WebSocket push (the real confirmed state, a moment later)
+  // reconcile it. On failure there's no such correction coming, so revert by hand.
+  async function run(optimisticPatch: Partial<UnitState>, action: () => Promise<UnitState>) {
+    const previous = unit;
+    onUpdate({ ...unit, ...optimisticPatch });
     setPending(true);
     try {
-      const next = await action();
-      onUpdate(next);
+      await action();
     } catch (err) {
+      onUpdate(previous);
       const message =
         err instanceof ApiError ? err.message : messageFromError(err, "Request failed");
       pushToast("error", message);
@@ -49,7 +56,9 @@ export function ControlPanel({
               max={limits?.max_cool ?? limits?.max_heat ?? null}
               disabled={pending || offline}
               onChange={(setpoint) =>
-                run(() => apiPost<UnitState>(`/units/${unit.id}/setpoints`, { setpoint }))
+                run({ single_setpoint: setpoint }, () =>
+                  apiPost<UnitState>(`/units/${unit.id}/setpoints`, { setpoint }),
+                )
               }
             />
           ) : (
@@ -62,7 +71,9 @@ export function ControlPanel({
                   max={limits?.max_heat ?? null}
                   disabled={pending || offline}
                   onChange={(heat_setpoint) =>
-                    run(() => apiPost<UnitState>(`/units/${unit.id}/setpoints`, { heat_setpoint }))
+                    run({ heat_setpoint }, () =>
+                      apiPost<UnitState>(`/units/${unit.id}/setpoints`, { heat_setpoint }),
+                    )
                   }
                 />
               )}
@@ -74,7 +85,9 @@ export function ControlPanel({
                   max={limits?.max_cool ?? null}
                   disabled={pending || offline}
                   onChange={(cool_setpoint) =>
-                    run(() => apiPost<UnitState>(`/units/${unit.id}/setpoints`, { cool_setpoint }))
+                    run({ cool_setpoint }, () =>
+                      apiPost<UnitState>(`/units/${unit.id}/setpoints`, { cool_setpoint }),
+                    )
                   }
                 />
               )}
@@ -88,7 +101,7 @@ export function ControlPanel({
         <ModeSelector
           value={unit.mode}
           disabled={pending || offline}
-          onChange={(mode) => run(() => apiPost<UnitState>(`/units/${unit.id}/mode`, { mode }))}
+          onChange={(mode) => run({ mode }, () => apiPost<UnitState>(`/units/${unit.id}/mode`, { mode }))}
         />
       </div>
 
@@ -97,7 +110,9 @@ export function ControlPanel({
         <FanSelector
           value={unit.fan_mode}
           disabled={pending || offline}
-          onChange={(fan_mode) => run(() => apiPost<UnitState>(`/units/${unit.id}/fan`, { fan_mode }))}
+          onChange={(fan_mode) =>
+            run({ fan_mode }, () => apiPost<UnitState>(`/units/${unit.id}/fan`, { fan_mode }))
+          }
         />
       </div>
     </div>
