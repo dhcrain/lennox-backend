@@ -13,12 +13,15 @@ RUN npm run build
 
 FROM python:3.14-slim
 WORKDIR /srv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 # Install security updates included after the base image release.
 RUN apt-get update \
 	&& apt-get upgrade -y \
 	&& rm -rf /var/lib/apt/lists/*
+
+# ghcr.io/astral-sh/uv only publishes amd64/arm64, no armv7 (32-bit Pi) --
+# install from PyPI instead, which does ship an armv7l wheel.
+RUN pip install --no-cache-dir uv
 
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev --compile-bytecode

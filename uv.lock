@@ -1,6 +1,10 @@
 version = 1
 revision = 3
 requires-python = ">=3.14"
+resolution-markers = [
+    "platform_machine != 'armv7l'",
+    "platform_machine == 'armv7l'",
+]
 
 [[package]]
 name = "aiohappyeyeballs"
@@ -234,7 +238,8 @@ dependencies = [
     { name = "fastapi" },
     { name = "lennoxs30api" },
     { name = "pyyaml" },
-    { name = "uvicorn", extra = ["standard"] },
+    { name = "uvicorn" },
+    { name = "uvicorn", extra = ["standard"], marker = "platform_machine != 'armv7l'" },
 ]
 
 [package.metadata]
@@ -242,7 +247,8 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.141.1" },
     { name = "lennoxs30api", specifier = ">=0.2.24" },
     { name = "pyyaml", specifier = ">=6.0.3" },
-    { name = "uvicorn", extras = ["standard"], specifier = ">=0.52.4" },
+    { name = "uvicorn", marker = "platform_machine == 'armv7l'", specifier = ">=0.52.4" },
+    { name = "uvicorn", extras = ["standard"], marker = "platform_machine != 'armv7l'", specifier = ">=0.52.4" },
 ]
 
 [[package]]
