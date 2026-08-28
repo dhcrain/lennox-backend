@@ -17,7 +17,7 @@ uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - `GET /units` — list units + connection status
 
   ```
-  curl -H "Authorization: Bearer d07ac2a775cd089ffc61985d11de3525f75a73ae857eef27556cf5bf1bc0ef22" http://localhost:8000/units
+  curl -H "Authorization: Bearer <api_token>" http://localhost:8000/units
   ```
 - `GET /units/{id}` — full zone state
 - `POST /units/{id}/mode` — `{"mode": "cool"}`
