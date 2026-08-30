@@ -240,6 +240,7 @@ dependencies = [
     { name = "pyyaml" },
     { name = "uvicorn" },
     { name = "uvicorn", extra = ["standard"], marker = "platform_machine != 'armv7l'" },
+    { name = "websockets", marker = "platform_machine == 'armv7l'" },
 ]
 
 [package.metadata]
@@ -249,6 +250,7 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "uvicorn", marker = "platform_machine == 'armv7l'", specifier = ">=0.52.4" },
     { name = "uvicorn", extras = ["standard"], marker = "platform_machine != 'armv7l'", specifier = ">=0.52.4" },
+    { name = "websockets", marker = "platform_machine == 'armv7l'", specifier = ">=15" },
 ]
 
 [[package]]
