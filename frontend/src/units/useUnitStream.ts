@@ -56,8 +56,24 @@ export function useUnitStream(
 
     connect();
 
+    function handleVisibilityChange() {
+      if (document.visibilityState !== "visible" || cancelled) return;
+      // iOS suspends WebSockets on lock/background without always firing onclose promptly;
+      // force a reconnect on resume if the socket isn't actually open.
+      if (ws && ws.readyState !== WebSocket.OPEN && ws.readyState !== WebSocket.CONNECTING) {
+        if (reconnectTimer) clearTimeout(reconnectTimer);
+        attemptRef.current = 0;
+        connect();
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pageshow", handleVisibilityChange);
+
     return () => {
       cancelled = true;
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pageshow", handleVisibilityChange);
       if (reconnectTimer) clearTimeout(reconnectTimer);
       ws?.close();
     };

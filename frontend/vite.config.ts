@@ -13,11 +13,14 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["apple-touch-icon.png"],
       manifest: {
+        id: "/",
         name: "Lennox Thermostats",
         short_name: "Lennox",
         start_url: "/",
         scope: "/",
         display: "standalone",
+        display_override: ["standalone"],
+        orientation: "portrait-primary",
         background_color: "#020617",
         theme_color: "#020617",
         icons: [
