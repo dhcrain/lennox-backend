@@ -50,6 +50,27 @@ docker compose up -d --build
 
 Logs: `docker compose logs -f`. Stop: `docker compose down`.
 
+## Deploying to the Pi
+
+Production runs on the Raspberry Pi at `pi-printer` (192.168.50.175), which
+also hosts other containerized services. It has a persistent clone at
+`/home/pi/lennox-backend` with its own real `config.yaml`.
+
+```
+ssh pi-printer
+cd /home/pi/lennox-backend
+git pull origin main
+docker compose up -d --build
+```
+
+The `--build` step compiles native dependencies on 32-bit ARM and can take
+several minutes. Verify with:
+
+```
+docker ps --filter name=lennox
+curl http://localhost:8000/health
+```
+
 ## API
 
 - `GET /health` — process liveness (no auth)
